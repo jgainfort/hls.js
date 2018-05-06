@@ -33,8 +33,9 @@ class AudioTrackController extends EventHandler {
     this.ticks++;
     if (this.ticks === 1) {
       this.doTick();
-      if (this.ticks > 1)
+      if (this.ticks > 1) {
         setTimeout(this.tick, 1);
+      }
 
       this.ticks = 0;
     }
@@ -45,8 +46,9 @@ class AudioTrackController extends EventHandler {
   }
 
   onError (data) {
-    if (data.fatal && data.type === ErrorTypes.NETWORK_ERROR)
+    if (data.fatal && data.type === ErrorTypes.NETWORK_ERROR) {
       this.cleanTimer();
+    }
   }
 
   onManifestLoading () {
@@ -105,8 +107,9 @@ class AudioTrackController extends EventHandler {
 
   /** select an audio track, based on its index in audio track lists**/
   set audioTrack (audioTrackId) {
-    if (this.trackId !== audioTrackId || this.tracks[audioTrackId].details === undefined)
+    if (this.trackId !== audioTrackId || this.tracks[audioTrackId].details === undefined) {
       this.setAudioTrackInternal(audioTrackId);
+    }
   }
 
   setAudioTrackInternal (newId) {
@@ -121,8 +124,6 @@ class AudioTrackController extends EventHandler {
         type = audioTrack.type,
         url = audioTrack.url,
         eventObj = { id: newId, type: type, url: url };
-      // keep AUDIO_TRACK_SWITCH for legacy reason
-      hls.trigger(Event.AUDIO_TRACK_SWITCH, eventObj);
       hls.trigger(Event.AUDIO_TRACK_SWITCHING, eventObj);
       // check if we need to load playlist for this audio Track
       let details = audioTrack.details;

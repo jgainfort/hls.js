@@ -128,8 +128,9 @@ class PlaylistLoader extends EventHandler {
   }
 
   resetInternalLoader (contextType) {
-    if (this.loaders[contextType])
+    if (this.loaders[contextType]) {
       delete this.loaders[contextType];
+    }
   }
 
   /**
@@ -138,8 +139,9 @@ class PlaylistLoader extends EventHandler {
   destroyInternalLoaders () {
     for (let contextType in this.loaders) {
       let loader = this.loaders[contextType];
-      if (loader)
+      if (loader) {
         loader.destroy();
+      }
 
       this.resetInternalLoader(contextType);
     }
@@ -256,11 +258,12 @@ class PlaylistLoader extends EventHandler {
       return;
     }
 
-    // Check if chunk-list or master
-    if (string.indexOf('#EXTINF:') > 0)
+    // Check if chunk-list or master. handle empty chunk list case (first EXTINF not signaled, but TARGETDURATION present)
+    if (string.indexOf('#EXTINF:') > 0 || string.indexOf('#EXT-X-TARGETDURATION:') > 0) {
       this._handleTrackOrLevelPlaylist(response, stats, context, networkDetails);
-    else
+    } else {
       this._handleMasterPlaylist(response, stats, context, networkDetails);
+    }
   }
 
   loaderror (response, context, networkDetails = null) {
@@ -268,7 +271,7 @@ class PlaylistLoader extends EventHandler {
   }
 
   loadtimeout (stats, context, networkDetails = null) {
-    this._handleNetworkError(context, networkDetails);
+    this._handleNetworkError(context, networkDetails, true);
   }
 
   _handleMasterPlaylist (response, stats, context, networkDetails) {
@@ -297,8 +300,9 @@ class PlaylistLoader extends EventHandler {
       // check if we have found an audio track embedded in main playlist (audio track without URI attribute)
       let embeddedAudioFound = false;
       audioTracks.forEach(audioTrack => {
-        if (!audioTrack.url)
+        if (!audioTrack.url) {
           embeddedAudioFound = true;
+        }
       });
 
       // if no embedded audio track defined, but audio codec signaled in quality level,
@@ -391,8 +395,9 @@ class PlaylistLoader extends EventHandler {
       const segRefInfo = segmentRef.info;
       const frag = context.levelDetails.fragments[index];
 
-      if (frag.byteRange.length === 0)
+      if (frag.byteRange.length === 0) {
         frag.rawByteRange = String(1 + segRefInfo.end - segRefInfo.start) + '@' + String(segRefInfo.start);
+      }
     });
 
     context.levelDetails.initSegment.rawByteRange = String(sidxInfo.moovEndOffset) + '@0';
@@ -409,7 +414,7 @@ class PlaylistLoader extends EventHandler {
     });
   }
 
-  _handleNetworkError (context, networkDetails) {
+  _handleNetworkError (context, networkDetails, timeout = false) {
     let details;
     let fatal;
 
@@ -417,15 +422,15 @@ class PlaylistLoader extends EventHandler {
 
     switch (context.type) {
     case ContextType.MANIFEST:
-      details = ErrorDetails.MANIFEST_LOAD_TIMEOUT;
+      details = (timeout ? ErrorDetails.MANIFEST_LOAD_TIMEOUT : ErrorDetails.MANIFEST_LOAD_ERROR);
       fatal = true;
       break;
     case ContextType.LEVEL:
-      details = ErrorDetails.LEVEL_LOAD_TIMEOUT;
+      details = (timeout ? ErrorDetails.LEVEL_LOAD_TIMEOUT : ErrorDetails.LEVEL_LOAD_ERROR);
       fatal = false;
       break;
     case ContextType.AUDIO_TRACK:
-      details = ErrorDetails.AUDIO_TRACK_LOAD_TIMEOUT;
+      details = (timeout ? ErrorDetails.AUDIO_TRACK_LOAD_TIMEOUT : ErrorDetails.AUDIO_TRACK_LOAD_ERROR);
       fatal = false;
       break;
     default:

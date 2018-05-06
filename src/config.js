@@ -18,7 +18,7 @@ import SubtitleTrackController from './controller/subtitle-track-controller';
 import SubtitleStreamController from './controller/subtitle-stream-controller';
 import EMEController from './controller/eme-controller';
 
-import { requestMediaKeySystemAccess } from './helper/mediakeys-helper';
+import { requestMediaKeySystemAccess } from './utils/mediakeys-helper';
 
 export var hlsDefaultConfig = {
   autoStartLoad: true, // used by stream-controller
@@ -31,7 +31,7 @@ export var hlsDefaultConfig = {
   maxBufferLength: 30, // used by stream-controller
   maxBufferSize: 60 * 1000 * 1000, // used by stream-controller
   maxBufferHole: 0.5, // used by stream-controller
-  maxSeekHole: 2, // used by stream-controller
+
   lowBufferWatchdogPeriod: 0.5, // used by stream-controller
   highBufferWatchdogPeriod: 3, // used by stream-controller
   nudgeOffset: 0.1, // used by stream-controller
@@ -111,5 +111,6 @@ if (__USE_ALT_AUDIO__) {
   hlsDefaultConfig.audioTrackController = AudioTrackController;
 }
 
-if (__USE_EME_DRM__)
+if (__USE_EME_DRM__) {
   hlsDefaultConfig.emeController = EMEController;
+}
