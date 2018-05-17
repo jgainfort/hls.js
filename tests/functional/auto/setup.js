@@ -10,6 +10,8 @@ const onTravis = !!process.env.TRAVIS;
 
 let browserDescription;
 
+let stream;
+
 // Setup browser config data from env vars
 (function () {
   if (onTravis) {
@@ -81,6 +83,10 @@ function retry (cb, numAttempts, interval) {
 
 describe('testing hls.js playback in the browser on "' + browserDescription + '"', function () {
   beforeEach(function () {
+    if (!stream) {
+      throw new Error('Stream not defined');
+    }
+
     let capabilities = {
       name: '"' + stream.description + '" on "' + browserDescription + '"',
       browserName: browserConfig.name,
@@ -104,7 +110,9 @@ describe('testing hls.js playback in the browser on "' + browserDescription + '"
       this.browser = new webdriver.Builder();
     }
     this.browser = this.browser.withCapabilities(capabilities).build();
-    this.browser.manage().timeouts().setScriptTimeout(75000);
+    this.browser.manage().setTimeouts({ script: 75000 }).catch(function (err) {
+      console.log('setTimeouts: ' + err);
+    });
     console.log('Retrieving web driver session...');
     return this.browser.getSession().then(function (session) {
       console.log('Web driver session id: ' + session.getId());
@@ -275,7 +283,7 @@ describe('testing hls.js playback in the browser on "' + browserDescription + '"
   };
 
   for (let name in streams) {
-    var stream = streams[name];
+    stream = streams[name];
     let url = stream.url;
     let config = stream.config || {};
     if (!stream.blacklist_ua || stream.blacklist_ua.indexOf(browserConfig.name) === -1) {

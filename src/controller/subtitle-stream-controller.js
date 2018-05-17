@@ -125,7 +125,7 @@ class SubtitleStreamController extends TaskLoop {
       trackDetails.fragments.forEach(frag => {
         if (!(alreadyProcessed(frag) || frag.sn === currentFragSN || alreadyInQueue(frag))) {
           // Load key if subtitles are encrypted
-          if ((frag.decryptdata && frag.decryptdata.uri != null) && (frag.decryptdata.key == null)) {
+          if (frag.encrypted) {
             logger.log(`Loading key for ${frag.sn}`);
             this.state = State.KEY_LOADING;
             this.hls.trigger(Event.KEY_LOADING, { frag: frag });
@@ -153,15 +153,14 @@ class SubtitleStreamController extends TaskLoop {
 
   onSubtitleTrackSwitch (data) {
     this.currentTrackId = data.id;
-    if (this.currentTrackId === -1) {
+    if (!this.tracks || this.currentTrackId === -1) {
       return;
     }
 
     // Check if track was already loaded and if so make sure we finish
     // downloading its frags, if not all have been downloaded yet
     const currentTrack = this.tracks[this.currentTrackId];
-    let details = currentTrack.details;
-    if (details !== undefined) {
+    if (currentTrack && currentTrack.details) {
       this.tick();
     }
   }
