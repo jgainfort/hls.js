@@ -61,11 +61,13 @@ class StreamController extends TaskLoop {
 
   onHandlerDestroying () {
     this.stopLoad();
+    super.onHandlerDestroying();
   }
 
   onHandlerDestroyed () {
     this.state = State.STOPPED;
     this.fragmentTracker = null;
+    super.onHandlerDestroyed();
   }
 
   startLoad (startPosition) {
@@ -565,7 +567,7 @@ class StreamController extends TaskLoop {
         media decode error, check this, to avoid seeking back to
         wrong position after a media decode error
       */
-      if (currentTime > video.playbackRate * this.lastCurrentTime) {
+      if (currentTime > this.lastCurrentTime) {
         this.lastCurrentTime = currentTime;
       }
 
